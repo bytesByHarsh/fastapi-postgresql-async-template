@@ -1,0 +1,17 @@
+alembic
+black
+email-validator
+fastapi
+FastAPI-SQLAlchemy
+psycopg2
+psycopg2-binary
+pydantic
+pydantic-settings
+pytest
+python-dotenv
+python-jose
+python-multipart
+SQLAlchemy
+SQLAlchemy-Utils
+sqlmodel
+uvicorn
