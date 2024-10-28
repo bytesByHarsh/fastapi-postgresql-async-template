@@ -1,16 +1,10 @@
 # Built-in Dependencies
-from typing import (
-    Any, Callable,
-    Optional, Type,
-    TypeVar, List,
-    Tuple
-)
+from typing import Any, Callable, Optional, Type, TypeVar, List, Tuple
 from copy import deepcopy
 
 # Third-Party Dependencies
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
-from pydantic import BaseModel
 
 # https://github.com/pydantic/pydantic/issues/1223
 # https://github.com/pydantic/pydantic/pull/3179
@@ -40,11 +34,11 @@ def optional(without_fields: List[str] | None = None) -> Callable[[Model], Model
         ) -> Tuple[Any, FieldInfo]:
             new = deepcopy(field)
             new.default = default
-            new.annotation = Optional[field.annotation] # type: ignore
+            new.annotation = Optional[field.annotation]  # type: ignore
             return new.annotation, new
 
         if without_fields:
-            base_model = BaseModel # type: ignore
+            base_model = BaseModel  # type: ignore
 
         return create_model(
             model.__name__,
@@ -52,9 +46,9 @@ def optional(without_fields: List[str] | None = None) -> Callable[[Model], Model
             __module__=model.__module__,
             **{
                 field_name: make_field_optional(field_info)
-                for field_name, field_info in model.model_fields.items() # type: ignore
+                for field_name, field_info in model.model_fields.items()  # type: ignore
                 if field_name not in without_fields
             },
         )
 
-    return wrapper # type: ignore
+    return wrapper  # type: ignore

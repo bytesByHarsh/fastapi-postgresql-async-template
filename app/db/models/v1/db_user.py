@@ -1,11 +1,8 @@
 # Built-in Dependencies
-from uuid import UUID
-from typing import Optional
 
 # Third-Party Dependencies
 from sqlmodel import Field
 from enum import Enum
-from pydantic import field_validator
 
 # Local Dependencies
 from app.db.models.v1.common import (
@@ -15,6 +12,7 @@ from app.db.models.v1.common import (
     Base,
 )
 from app.core.config import settings
+
 
 class UserPersonalInfoBase(Base):
     """
@@ -66,6 +64,7 @@ class UserPersonalInfoBase(Base):
         schema_extra={"examples": ["test@example.com"]},
     )  # Todo: Use EmailStr when it's supported by SQLModel (https://github.com/tiangolo/sqlmodel/pull/762)
 
+
 class UserMediaBase(Base):
     """
     SQLModel Base
@@ -91,6 +90,7 @@ class UserMediaBase(Base):
         schema_extra={"examples": [settings.DEFAULT_USER_IMAGE]},
     )
 
+
 class UserPermissionBase(Base):
     """
     SQLModel Base
@@ -113,6 +113,7 @@ class UserPermissionBase(Base):
     is_superuser: bool = Field(
         default=False, description="Indicates whether the user has superuser privileges"
     )
+
 
 class UserSecurityBase(Base):
     """
@@ -142,10 +143,12 @@ class AccessLevel_Enum(str, Enum):
     """
     User Role Enum
     """
+
     ADMIN = "admin"
     USER = "user"
     GUEST = "guest"
     MODERATOR = "moderator"
+
 
 class UserRoleBase(Base):
     """
@@ -163,6 +166,7 @@ class UserRoleBase(Base):
         description="Role of the user.",
         schema_extra={"Examples": AccessLevel_Enum.GUEST.value},
     )
+
 
 class User(
     UserPersonalInfoBase,

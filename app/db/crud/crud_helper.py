@@ -31,12 +31,12 @@ def _extract_matching_columns_from_schema(
     List[Any]
         A list of ORM column objects from the model that correspond to the field names defined in the schema.
     """
-    column_list = list(model.__table__.columns) # type: ignore
+    column_list = list(model.__table__.columns)  # type: ignore
     if schema is not None:
         if isinstance(schema, list):
             schema_fields = schema
         else:
-            schema_fields = schema.model_fields.keys() # type: ignore
+            schema_fields = schema.model_fields.keys()  # type: ignore
 
         column_list = []
         for column_name in schema_fields:
@@ -97,13 +97,13 @@ def _auto_detect_join_condition(
     # Assuming User has a foreign key reference to Tier:
     join_condition = auto_detect_join_condition(User, Tier)
     """
-    fk_columns = [col for col in inspect(base_model).c if col.foreign_keys] # type: ignore
+    fk_columns = [col for col in inspect(base_model).c if col.foreign_keys]  # type: ignore
     join_on = next(
         (
-            base_model.__table__.c[col.name]    # type: ignore
-            == join_model.__table__.c[list(col.foreign_keys)[0].column.name] # type: ignore
+            base_model.__table__.c[col.name]  # type: ignore
+            == join_model.__table__.c[list(col.foreign_keys)[0].column.name]  # type: ignore
             for col in fk_columns
-            if list(col.foreign_keys)[0].column.table == join_model.__table__ # type: ignore
+            if list(col.foreign_keys)[0].column.table == join_model.__table__  # type: ignore
         ),
         None,
     )

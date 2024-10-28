@@ -6,7 +6,6 @@ import os
 import fastapi
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 # Add the project directory to the sys.path
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
@@ -15,7 +14,6 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 # Local Dependencies
 from app.core.config import settings
 from app.db import init_db
-from app.core.dependencies import create_folders
 
 from app.apis.base import api_router
 
@@ -32,6 +30,7 @@ tags_metadata = [
     {"name": "User", "description": "This is user route"},
 ]
 
+
 def include_router(app: fastapi.FastAPI):
     app.include_router(api_router)
 
@@ -39,6 +38,7 @@ def include_router(app: fastapi.FastAPI):
 async def startup_event():
     print("Executing startup event")
     await init_db.init_db()
+
 
 def start_application():
     app = fastapi.FastAPI(
@@ -63,9 +63,12 @@ def start_application():
     app.add_event_handler("startup", startup_event)
     return app
 
+
 if __name__ == "__main__":
     try:
-        print(f"[INFO] Starting Application at: host={settings.SERVER_IP}, port={settings.SERVER_PORT}")
+        print(
+            f"[INFO] Starting Application at: host={settings.SERVER_IP}, port={settings.SERVER_PORT}"
+        )
         uvicorn.run(
             "main:start_application",
             host=settings.SERVER_IP,

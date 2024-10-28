@@ -34,6 +34,7 @@ class UserBase(UserPersonalInfoBase):
 
     pass
 
+
 class User(
     UserBase,
     UserMediaBase,
@@ -67,6 +68,7 @@ class User(
 
     pass
 
+
 class UserRead(
     UserBase,
     UserMediaBase,
@@ -92,7 +94,9 @@ class UserRead(
 
     pass
 
-class UserCreate(UserBase,
+
+class UserCreate(
+    UserBase,
     UserMediaBase,
     UserRoleBase,
 ):
@@ -111,7 +115,7 @@ class UserCreate(UserBase,
     - 'password': User's password.
     """
 
-    model_config = ConfigDict(extra="forbid") # type: ignore
+    model_config = ConfigDict(extra="forbid")  # type: ignore
 
     password: Annotated[
         str,
@@ -123,12 +127,7 @@ class UserCreate(UserBase,
     ]
 
 
-class UserCreateInternal(
-    UserBase,
-    UserMediaBase,
-    UserRoleBase,
-    UserSecurityBase
-):
+class UserCreateInternal(UserBase, UserMediaBase, UserRoleBase, UserSecurityBase):
     """
     API Schema
 
@@ -153,7 +152,6 @@ class UserUpdate(
     UserMediaBase,
     UserRoleBase,
 ):
-
     """
     API Schema
 
@@ -170,7 +168,7 @@ class UserUpdate(
     - 'user_role' : User role
     """
 
-    model_config = ConfigDict(extra="forbid") # type: ignore
+    model_config = ConfigDict(extra="forbid")  # type: ignore
 
 
 class UserUpdateInternal(UserUpdate):
@@ -193,8 +191,6 @@ class UserUpdateInternal(UserUpdate):
     updated_at: datetime
 
 
-
-
 class UserDelete(SoftDeleteMixin):
     """
     API Schema
@@ -208,7 +204,7 @@ class UserDelete(SoftDeleteMixin):
     - 'is_deleted': Flag indicating whether the user record is deleted (soft deletion).
     """
 
-    model_config = ConfigDict(extra="forbid") # type: ignore
+    model_config = ConfigDict(extra="forbid")  # type: ignore
 
 
 class UserRestoreDeleted(BaseModel):

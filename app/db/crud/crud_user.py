@@ -12,13 +12,10 @@ from app.schemas.v1.schema_user import (
     UserUpdateInternal,
     UserDelete,
     UserCreate,
-    UserRead
 )
 
 from app.core.http_exceptions import (
     DuplicateValueException,
-    NotFoundException,
-    ForbiddenException,
     # RateLimitException
 )
 
@@ -50,7 +47,10 @@ async def create_new_user(user: UserCreate, db: AsyncSession) -> User:
     user_internal = UserCreateInternal(**user_internal_dict)
     return await crud_users.create(db=db, object=user_internal)
 
-async def get_user(username_or_email: str, db: AsyncSession) -> Union[Dict[str, Any], Literal[None]]:
+
+async def get_user(
+    username_or_email: str, db: AsyncSession
+) -> Union[Dict[str, Any], Literal[None]]:
     if "@" in username_or_email:
         db_user: dict = await crud_users.get(
             db=db, email=username_or_email, is_deleted=False
