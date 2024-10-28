@@ -33,17 +33,13 @@ CRUDUser = CRUDBase[
 crud_users = CRUDUser(User)
 
 
-async def create_new_user(user: UserCreate, db: AsyncSession) -> UserRead:
+async def create_new_user(user: UserCreate, db: AsyncSession) -> User:
     email_row = await crud_users.exists(db=db, email=user.email)
     if email_row:
         raise DuplicateValueException("Email is already registered")
     username_row = await crud_users.exists(db=db, username=user.username)
     if username_row:
         raise DuplicateValueException("Username not available")
-
-    emp_id = await crud_users.exists(db=db, emp_id=user.emp_id)
-    if emp_id:
-        raise DuplicateValueException("emp_id is already registered")
 
     user_internal_dict = user.model_dump()
     user_internal_dict["hashed_password"] = Hasher.get_hash_password(

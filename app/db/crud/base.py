@@ -130,7 +130,7 @@ class CRUDBase(
         result = await db.exec(stmt)
         return result.first() is not None
 
-    async def count(self, db: AsyncSession, **kwargs: Any) -> int:
+    async def count(self, db: AsyncSession, **kwargs: Any) -> int|None:
         """
         Count the records based on filters.
 
@@ -162,7 +162,7 @@ class CRUDBase(
             )
         else:
             count_query = select(func.count()).select_from(self._model)
-        total_count: int = await db.scalar(count_query)
+        total_count: int | None = await db.scalar(count_query)
 
         return total_count
 
@@ -213,7 +213,7 @@ class CRUDBase(
         offset: int = 0,
         limit: int = 100,
         schema_to_select: Union[Type[SQLModel], List[Type[SQLModel]], None] = None,
-        filters: List[Any] = None,
+        filters: List[Any] | None = None,
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
@@ -258,13 +258,13 @@ class CRUDBase(
         self,
         db: AsyncSession,
         join_model: Type[ModelType],
-        join_prefix: str = None,
+        join_prefix: str | None = None,
         join_on: Union[Join, None] = None,
         schema_to_select: Union[Type[SQLModel], List, None] = None,
         join_schema_to_select: Union[Type[SQLModel], List, None] = None,
         join_type: str = "left",
         **kwargs: Any,
-    ) -> dict:
+    ) -> dict | None:
         """
         Fetches a single record with a join on another model. If 'join_on' is not provided, the method attempts
         to automatically detect the join condition using foreign key relationships.
@@ -342,7 +342,7 @@ class CRUDBase(
         ```
         """
         if join_on is None:
-            join_on = _auto_detect_join_condition(self._model, join_model)
+            join_on = _auto_detect_join_condition(self._model, join_model) # type: ignore
 
         # Extract columns to select from primary model based on schema
         primary_select = _extract_matching_columns_from_schema(
@@ -356,7 +356,7 @@ class CRUDBase(
                 model=join_model, schema=join_schema_to_select
             )
         else:
-            columns = inspect(join_model).c
+            columns = inspect(join_model).c # type: ignore
 
         for column in columns:
             labeled_column = _add_column_with_prefix(column, join_prefix)
@@ -393,7 +393,7 @@ class CRUDBase(
         self,
         db: AsyncSession,
         join_model: Type[ModelType],
-        join_prefix: str = None,
+        join_prefix: str | None = None,
         join_on: Union[Join, None] = None,
         schema_to_select: Union[Type[SQLModel], List[Type[SQLModel]], None] = None,
         join_schema_to_select: Union[Type[SQLModel], List[Type[SQLModel]], None] = None,
@@ -448,7 +448,7 @@ class CRUDBase(
         )
         """
         if join_on is None:
-            join_on = _auto_detect_join_condition(self._model, join_model)
+            join_on = _auto_detect_join_condition(self._model, join_model) # type: ignore
 
         primary_select = _extract_matching_columns_from_schema(
             model=self._model, schema=schema_to_select
@@ -460,7 +460,7 @@ class CRUDBase(
                 model=join_model, schema=join_schema_to_select
             )
         else:
-            columns = inspect(join_model).c
+            columns = inspect(join_model).c # type: ignore
 
         for column in columns:
             labeled_column = _add_column_with_prefix(column, join_prefix)
@@ -523,7 +523,7 @@ class CRUDBase(
 
         stmt = update(self._model).filter_by(**kwargs).values(update_data)
 
-        await db.exec(stmt)
+        await db.exec(stmt) # type: ignore
         await db.commit()
 
     async def db_delete(self, db: AsyncSession, **kwargs: Any) -> None:
@@ -542,10 +542,10 @@ class CRUDBase(
         None
         """
         stmt = delete(self._model).filter_by(**kwargs)
-        await db.exec(stmt)
+        await db.exec(stmt) # type: ignore
         await db.commit()
 
-    async def delete(self, db: AsyncSession, db_row: Row = None, **kwargs: Any) -> None:
+    async def delete(self, db: AsyncSession, db_row: Row | None = None, **kwargs: Any) -> None:
         """
         Soft delete a record if it has "is_deleted" attribute, otherwise perform a hard delete.
 
@@ -562,19 +562,19 @@ class CRUDBase(
         ----------
         None
         """
-        db_row = db_row or await self.exists(db=db, **kwargs)
+        db_row = db_row or await self.exists(db=db, **kwargs) # type: ignore
         if db_row:
-            if "is_deleted" in self._model.__table__.columns:
+            if "is_deleted" in self._model.__table__.columns: # type: ignore
                 object_dict = {
                     "is_deleted": True,
                     "deleted_at": datetime.now(timezone.utc),
                 }
                 stmt = update(self._model).filter_by(**kwargs).values(object_dict)
 
-                await db.exec(stmt)
+                await db.exec(stmt) # type: ignore
                 await db.commit()
 
             else:
-                stmt = delete(self._model).filter_by(**kwargs)
-                await db.exec(stmt)
+                stmt = delete(self._model).filter_by(**kwargs) # type: ignore
+                await db.exec(stmt) # type: ignore
                 await db.commit()

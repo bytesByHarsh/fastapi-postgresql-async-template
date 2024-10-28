@@ -111,7 +111,7 @@ class UserCreate(UserBase,
     - 'password': User's password.
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid") # type: ignore
 
     password: Annotated[
         str,
@@ -170,7 +170,7 @@ class UserUpdate(
     - 'user_role' : User role
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid") # type: ignore
 
 
 class UserUpdateInternal(UserUpdate):
@@ -208,7 +208,7 @@ class UserDelete(SoftDeleteMixin):
     - 'is_deleted': Flag indicating whether the user record is deleted (soft deletion).
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid") # type: ignore
 
 
 class UserRestoreDeleted(BaseModel):

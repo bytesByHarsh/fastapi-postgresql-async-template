@@ -17,8 +17,8 @@ class ListResponse(BaseModel, Generic[SchemaType]):
 class PaginatedListResponse(ListResponse[SchemaType]):
     total_count: int  # Total number of items
     has_more: bool  # Whether there are more items beyond the current page
-    page: int = None  # Current page number
-    items_per_page: int = None  # Number of items per page
+    page: int | None = None  # Current page number
+    items_per_page: int | None = None  # Number of items per page
 
 
 # Function to create a paginated response

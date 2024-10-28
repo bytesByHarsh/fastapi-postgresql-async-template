@@ -1,5 +1,10 @@
 # Built-in Dependencies
-from typing import Any, Callable, Optional, Type, TypeVar, List, Tuple
+from typing import (
+    Any, Callable,
+    Optional, Type,
+    TypeVar, List,
+    Tuple
+)
 from copy import deepcopy
 
 # Third-Party Dependencies
@@ -15,7 +20,7 @@ from pydantic import BaseModel
 Model = TypeVar("Model", bound=Type[BaseModel])
 
 
-def optional(without_fields: List[str] = None) -> Callable[[Model], Model]:
+def optional(without_fields: List[str] | None = None) -> Callable[[Model], Model]:
     """A decorator that create a partial model.
 
     Args:
@@ -35,11 +40,11 @@ def optional(without_fields: List[str] = None) -> Callable[[Model], Model]:
         ) -> Tuple[Any, FieldInfo]:
             new = deepcopy(field)
             new.default = default
-            new.annotation = Optional[field.annotation]
+            new.annotation = Optional[field.annotation] # type: ignore
             return new.annotation, new
 
         if without_fields:
-            base_model = BaseModel
+            base_model = BaseModel # type: ignore
 
         return create_model(
             model.__name__,
@@ -47,9 +52,9 @@ def optional(without_fields: List[str] = None) -> Callable[[Model], Model]:
             __module__=model.__module__,
             **{
                 field_name: make_field_optional(field_info)
-                for field_name, field_info in model.model_fields.items()
+                for field_name, field_info in model.model_fields.items() # type: ignore
                 if field_name not in without_fields
             },
         )
 
-    return wrapper
+    return wrapper # type: ignore

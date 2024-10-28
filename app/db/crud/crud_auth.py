@@ -7,7 +7,7 @@ from app.db.models.v1.db_auth import TokenBlacklist
 from app.db.crud.base import CRUDBase
 
 # Define a CRUD (Create, Read, Update, Delete) interface for the TokenBlacklist model
-CRUDTokenBlacklist = CRUDBase[
+CRUDTokenBlacklist = CRUDBase[ # type: ignore
     TokenBlacklist,
     TokenBlacklistCreate,
     TokenBlacklistUpdate,
@@ -16,4 +16,4 @@ CRUDTokenBlacklist = CRUDBase[
 ]
 
 # Create an instance of the CRUDTokenBlacklist with the TokenBlacklist model
-crud_token_blacklist = CRUDTokenBlacklist(TokenBlacklist)
+crud_token_blacklist = CRUDTokenBlacklist(TokenBlacklist) # type: ignore
