@@ -1,4 +1,5 @@
 alembic
+asyncpg
 black
 email-validator
 fastapi
@@ -14,4 +15,5 @@ python-multipart
 SQLAlchemy
 SQLAlchemy-Utils
 sqlmodel
+tenacity
 uvicorn

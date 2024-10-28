@@ -1,4 +1,4 @@
-import secrets
+import os
 import warnings
 from typing import Annotated, Any, Literal
 
@@ -14,6 +14,22 @@ from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
+def unset_env():
+    all_env = os.environ
+    if 'POSTGRES_SERVER' in all_env:
+        del os.environ['POSTGRES_SERVER']
+    if 'POSTGRES_PORT' in all_env:
+        del os.environ['POSTGRES_PORT']
+    if 'POSTGRES_USER' in all_env:
+        del os.environ['POSTGRES_USER']
+    if 'POSTGRES_PASSWORD' in all_env:
+        del os.environ['POSTGRES_PASSWORD']
+    if 'POSTGRES_DB' in all_env:
+        del os.environ['POSTGRES_DB']
+    if 'POSTGRES_ASYNC_URI' in all_env:
+        del os.environ['POSTGRES_ASYNC_URI']
+    if 'DATABASE_URL' in all_env:
+        del os.environ['DATABASE_URL']
 
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
@@ -45,9 +61,8 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
-            self.FRONTEND_HOST
-        ]
+        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + \
+                [self.FRONTEND_HOST]
 
     PROJECT_NAME: str
 
@@ -56,9 +71,12 @@ class Settings(BaseSettings):
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = "template_app"
-    POSTGRES_ASYNC_URI: str = (
-        f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
-    )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def POSTGRES_ASYNC_URI(self) -> str:
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+
 
     FIRST_SUPERUSER_NAME: str = "admin"
     FIRST_SUPERUSER_EMAIL: str = "harshmittal2210@gmail.com"
@@ -85,5 +103,6 @@ class Settings(BaseSettings):
 
         return self
 
-
+unset_env()
 settings = Settings()  # type: ignore
+print(settings.POSTGRES_DB)
