@@ -18,4 +18,5 @@ SQLAlchemy
 SQLAlchemy-Utils
 sqlmodel
 tenacity
+types-passlib
 uvicorn

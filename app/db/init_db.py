@@ -1,25 +1,21 @@
 # Built-in Dependencies
-import asyncio
 
 # Third-Party Dependencies
-from sqlmodel import select
 
 # Local Dependencies
 from app.db.session import AsyncSession, local_session
 from app.db.session import async_engine as engine
-from app.core.hashing import Hasher
 
 
-from app.core.config import settings
 from app.db.models.v1.common import Base
 
 
 async def create_first_super_user(session: AsyncSession) -> None:
-    name = settings.FIRST_SUPERUSER_NAME
-    email = settings.FIRST_SUPERUSER_EMAIL
-    username = settings.FIRST_SUPERUSER_USERNAME
-    # userRole = settings.FIRST_SUPERUSER_ROLE
-    hashed_pass = Hasher.get_hash_password(settings.FIRST_SUPERUSER_PASSWORD)
+    # name = settings.FIRST_SUPERUSER_NAME
+    # email = settings.FIRST_SUPERUSER_EMAIL
+    # username = settings.FIRST_SUPERUSER_USERNAME
+    # # userRole = settings.FIRST_SUPERUSER_ROLE
+    # hashed_pass = Hasher.get_hash_password(settings.FIRST_SUPERUSER_PASSWORD)
 
     # check if already existing
     # query = select(User).filter_by(email=email)
@@ -39,6 +35,8 @@ async def create_first_super_user(session: AsyncSession) -> None:
     #         )
     #     )
     #     await session.commit()
+    pass
+
 
 async def init_tables() -> None:
     async with engine.begin() as conn:
@@ -48,5 +46,4 @@ async def init_tables() -> None:
 async def init_db() -> None:
     await init_tables()
     async with local_session() as session:
-
         await create_first_super_user(session=session)

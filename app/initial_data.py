@@ -2,9 +2,6 @@ import logging
 import asyncio
 
 
-from sqlmodel import Session
-
-from app.db.session import async_get_db
 from app.db.init_db import init_db
 
 logging.basicConfig(level=logging.INFO)

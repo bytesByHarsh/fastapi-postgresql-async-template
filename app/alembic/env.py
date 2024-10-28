@@ -73,14 +73,10 @@ def filter_db_objects(
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
+    This configures the context with just a URL and not an Engine, though an Engine is acceptable here as well.
+    By skipping the Engine creation, we don't even need a DBAPI to be available.
 
-    Calls to context.execute() here emit the given string to the
-    script output.
-
+    This function is responsible for running migrations when the application is not connected to a database.
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -88,6 +84,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=filter_db_objects,
     )
 
     with context.begin_transaction():
@@ -126,27 +123,6 @@ async def run_async_migrations() -> None:
         await connection.run_sync(do_run_migrations)
 
     await connectable.dispose()
-
-
-def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL and not an Engine, though an Engine is acceptable here as well.
-    By skipping the Engine creation, we don't even need a DBAPI to be available.
-
-    This function is responsible for running migrations when the application is not connected to a database.
-    """
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(
-        url=url,
-        target_metadata=target_metadata,
-        literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
-        include_object=filter_db_objects,
-    )
-
-    with context.begin_transaction():
-        context.run_migrations()
 
 
 def run_migrations_online() -> None:

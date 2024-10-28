@@ -118,13 +118,13 @@ class TimestampMixin(SQLModel):
         sa_type=DateTime(timezone=True),
         default_factory=lambda: datetime.now(timezone.utc),
         description="Timestamp for the creation of the record",
-    )
+    )  # type: ignore
     updated_at: datetime = Field(
         sa_type=DateTime(timezone=True),
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column_kwargs={"onupdate": datetime.now(timezone.utc)},
         description="Timestamp for the last update of the record",
-    )
+    )  # type: ignore
 
     @field_serializer("created_at")
     def serialize_dt(self, created_at: datetime, _info: Any) -> str:
@@ -169,7 +169,7 @@ class SoftDeleteMixin(SQLModel):
         sa_type=DateTime(timezone=True),
         default=None,
         description="Timestamp for the deletion of the record (soft deletion)",
-    )
+    )  # type: ignore
     is_deleted: bool = Field(
         default=False,
         index=True,
@@ -183,6 +183,7 @@ class SoftDeleteMixin(SQLModel):
 
         return None
 
+
 class Transaction_Status_Enum(str, Enum):
     PASS = "pass"
     FAIL = "fail"
@@ -190,6 +191,7 @@ class Transaction_Status_Enum(str, Enum):
     HOLD = "hold"
     IN_REVIEW = "in-review"
     REQUEST = "request"
+
 
 class TransactionStatus(Base):
     status: Transaction_Status_Enum = Field(
@@ -201,5 +203,5 @@ class TransactionStatus(Base):
     msg: str | None = Field(
         nullable=True,
         description="Any information related to transactions",
-        default_factory=None
+        default_factory=None,
     )
