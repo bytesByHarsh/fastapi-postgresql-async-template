@@ -5,6 +5,7 @@ email-validator
 fastapi
 FastAPI-SQLAlchemy
 mypy
+passlib
 psycopg2
 psycopg2-binary
 pydantic

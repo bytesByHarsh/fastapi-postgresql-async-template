@@ -80,6 +80,7 @@ class Settings(BaseSettings):
 
     FIRST_SUPERUSER_NAME: str = "admin"
     FIRST_SUPERUSER_EMAIL: str = "harshmittal2210@gmail.com"
+    FIRST_SUPERUSER_USERNAME: str = "admin"
     FIRST_SUPERUSER_PASSWORD: str
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
