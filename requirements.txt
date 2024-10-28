@@ -6,6 +6,7 @@ fastapi
 FastAPI-SQLAlchemy
 mypy
 passlib
+pillow
 psycopg2
 psycopg2-binary
 pydantic

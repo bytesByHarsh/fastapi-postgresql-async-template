@@ -75,6 +75,11 @@ class Settings(BaseSettings):
     SERVER_IP: str = "0.0.0.0"
     SERVER_PORT: int = 9000
 
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def SERVER_LINK(self) -> str:
+        return f"http://{self.SERVER_IP}:{self.SERVER_PORT}/"
+
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_SERVER: str = "localhost"
@@ -114,6 +119,15 @@ class Settings(BaseSettings):
         return self
 
     DATABASE_USER_TABLE: str = "users"
+
+    STATIC_FILE_FOLDER: str = "static"
+    PROFILE_IMAGE_FOLDER: str = "profile_images"
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def IMAGE_FILE_PATH(self) -> str:
+        return f"{self.STATIC_FILE_FOLDER}/{self.PROFILE_IMAGE_FOLDER}"
+
 
 
 unset_env()

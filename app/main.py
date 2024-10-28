@@ -6,6 +6,7 @@ import os
 import fastapi
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # Add the project directory to the sys.path
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
@@ -14,6 +15,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 # Local Dependencies
 from app.core.config import settings
 from app.db import init_db
+from app.core.dependencies import create_folders
 
 from app.apis.base import api_router
 
@@ -58,6 +60,11 @@ def start_application():
             allow_methods=["*"],
             allow_headers=["*"],
         )
+
+    create_folders(f"./{settings.STATIC_FILE_FOLDER}", [f"{settings.PROFILE_IMAGE_FOLDER}"])
+    app.mount(f"/{settings.STATIC_FILE_FOLDER}",
+              StaticFiles(directory=f"{settings.STATIC_FILE_FOLDER}"),
+              name=f"{settings.STATIC_FILE_FOLDER}")
 
     include_router(app)
     app.add_event_handler("startup", startup_event)
