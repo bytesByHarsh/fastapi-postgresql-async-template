@@ -110,6 +110,8 @@ class Settings(BaseSettings):
 
         return self
 
+    DATABASE_USER_TABLE: str = "users"
+
 
 unset_env()
 settings = Settings()  # type: ignore
