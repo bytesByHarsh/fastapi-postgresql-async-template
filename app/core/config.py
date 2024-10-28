@@ -11,22 +11,24 @@ from pydantic import (
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
+
 def unset_env():
     all_env = os.environ
-    if 'POSTGRES_SERVER' in all_env:
-        del os.environ['POSTGRES_SERVER']
-    if 'POSTGRES_PORT' in all_env:
-        del os.environ['POSTGRES_PORT']
-    if 'POSTGRES_USER' in all_env:
-        del os.environ['POSTGRES_USER']
-    if 'POSTGRES_PASSWORD' in all_env:
-        del os.environ['POSTGRES_PASSWORD']
-    if 'POSTGRES_DB' in all_env:
-        del os.environ['POSTGRES_DB']
-    if 'POSTGRES_ASYNC_URI' in all_env:
-        del os.environ['POSTGRES_ASYNC_URI']
-    if 'DATABASE_URL' in all_env:
-        del os.environ['DATABASE_URL']
+    if "POSTGRES_SERVER" in all_env:
+        del os.environ["POSTGRES_SERVER"]
+    if "POSTGRES_PORT" in all_env:
+        del os.environ["POSTGRES_PORT"]
+    if "POSTGRES_USER" in all_env:
+        del os.environ["POSTGRES_USER"]
+    if "POSTGRES_PASSWORD" in all_env:
+        del os.environ["POSTGRES_PASSWORD"]
+    if "POSTGRES_DB" in all_env:
+        del os.environ["POSTGRES_DB"]
+    if "POSTGRES_ASYNC_URI" in all_env:
+        del os.environ["POSTGRES_ASYNC_URI"]
+    if "DATABASE_URL" in all_env:
+        del os.environ["DATABASE_URL"]
+
 
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
@@ -34,6 +36,7 @@ def parse_cors(v: Any) -> list[str] | str:
     elif isinstance(v, list | str):
         return v
     raise ValueError(v)
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -58,8 +61,9 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + \
-                [self.FRONTEND_HOST]
+        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
+            self.FRONTEND_HOST
+        ]
 
     PROJECT_NAME: str
 
@@ -73,7 +77,6 @@ class Settings(BaseSettings):
     @property
     def POSTGRES_ASYNC_URI(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-
 
     FIRST_SUPERUSER_NAME: str = "admin"
     FIRST_SUPERUSER_EMAIL: str = "harshmittal2210@gmail.com"
@@ -99,6 +102,7 @@ class Settings(BaseSettings):
         )
 
         return self
+
 
 unset_env()
 settings = Settings()  # type: ignore

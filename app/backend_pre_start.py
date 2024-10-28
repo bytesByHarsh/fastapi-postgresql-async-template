@@ -33,6 +33,7 @@ async def init(get_db) -> None:
         logger.error(e)
         raise e
 
+
 # TODO: Fix create database
 async def create_database(get_db) -> None:
     try:
@@ -42,6 +43,7 @@ async def create_database(get_db) -> None:
     except Exception as e:
         logger.error(e)
         raise e
+
 
 def main() -> None:
     logger.info("Initializing service")
