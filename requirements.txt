@@ -4,6 +4,7 @@ black
 email-validator
 fastapi
 FastAPI-SQLAlchemy
+mypy
 psycopg2
 psycopg2-binary
 pydantic
