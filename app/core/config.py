@@ -66,6 +66,12 @@ class Settings(BaseSettings):
         ]
 
     PROJECT_NAME: str
+    PROJECT_VERSION: str = "v0.0.1"
+    CONTACT_NAME: str = "Harsh Mittal"
+    CONTACT_EMAIL: str = "harsmittal2210@gmail.com"
+
+    SERVER_IP: str = "0.0.0.0"
+    SERVER_PORT: int = 9000
 
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"

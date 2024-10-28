@@ -8,3 +8,4 @@ htmlcov
 .cache
 .venv
 .env
+.ruff_cache
