@@ -10,10 +10,7 @@ from PIL import Image
 from sqlalchemy.sql import text
 
 # Local Dependencies
-from app.core.dependencies import (
-    CurrentUser,
-    CurrentSuperUser
-)
+from app.core.dependencies import CurrentUser, CurrentSuperUser
 from app.db.crud.crud_user import crud_users, create_new_user
 from app.db.session import async_get_db
 from app.core.http_exceptions import (
@@ -24,7 +21,6 @@ from app.core.http_exceptions import (
 )
 from app.schemas.v1.schema_user import (
     UserCreate,
-    UserCreateInternal,
     UserUpdate,
     UserRead,
 )
@@ -36,14 +32,13 @@ from app.utils.paginated import (
     compute_offset,
 )
 from app.core.security import blacklist_token, oauth2_scheme
-from app.core.hashing import Hasher
 from app.core.config import settings
 
 router = fastapi.APIRouter(tags=["Users"])
 
 
 @router.post("/", response_model=UserRead, status_code=201)
-async def write_user(
+async def signup_user(
     request: Request,
     user: UserCreate,
     db: Annotated[AsyncSession, Depends(async_get_db)],
@@ -52,8 +47,9 @@ async def write_user(
     user.user_role = AccessLevel_Enum.USER
     return await create_new_user(user, db)
 
+
 @router.post("/create_user", response_model=UserRead, status_code=201)
-async def write_user(
+async def create_user(
     request: Request,
     user: UserCreate,
     db: Annotated[AsyncSession, Depends(async_get_db)],
@@ -61,13 +57,12 @@ async def write_user(
 ) -> Any:
     # For new user make these default
     try:
-        if current_user["user_role"] != AccessLevel_Enum.ADMIN.value:
-            raise ForbiddenException(
-                    "Don't have proper access to create user"
-                )
+        if current_user.user_role != AccessLevel_Enum.ADMIN.value:
+            raise ForbiddenException("Don't have proper access to create user")
         return await create_new_user(user, db)
-    except Exception as e:
+    except Exception:
         raise ForbiddenException("Wrong Input Details")
+
 
 @router.get("/search", response_model=PaginatedListResponse[UserRead])
 async def search_users(
@@ -83,14 +78,13 @@ async def search_users(
     if search:
         filters.append(text(f"username ILIKE '%{search}%'"))
 
-
-    if current_user["user_role"] == AccessLevel_Enum.ADMIN.value:
+    if current_user.user_role == AccessLevel_Enum.ADMIN.value:
         users_data = await crud_users.get_multi_on_filters(
             db=db,
             offset=compute_offset(page, items_per_page),
             limit=items_per_page,
             schema_to_select=UserRead,
-            filters=filters
+            filters=filters,
         )
     else:
         users_data = await crud_users.get_multi_on_filters(
@@ -98,7 +92,7 @@ async def search_users(
             offset=compute_offset(page, items_per_page),
             limit=items_per_page,
             schema_to_select=UserRead,
-            filters=filters
+            filters=filters,
         )
 
     if not users_data["data"]:
@@ -107,6 +101,7 @@ async def search_users(
     return paginated_response(
         crud_data=users_data, page=page, items_per_page=items_per_page
     )
+
 
 @router.get("/list", response_model=PaginatedListResponse[UserRead])
 async def read_users(
@@ -117,7 +112,7 @@ async def read_users(
     items_per_page: int = 10,
 ) -> dict:
     users_data = None
-    if current_user["user_role"] == AccessLevel_Enum.ADMIN.value:
+    if current_user.user_role == AccessLevel_Enum.ADMIN.value:
         users_data = await crud_users.get_multi(
             db=db,
             offset=compute_offset(page, items_per_page),
@@ -134,7 +129,7 @@ async def read_users(
             is_deleted=False,
         )
 
-    if users_data == None:
+    if users_data is None:
         raise NotFoundException("No User Found")
 
     return paginated_response(
@@ -157,7 +152,7 @@ async def read_user(
     db: Annotated[AsyncSession, Depends(async_get_db)],
     current_user: CurrentUser,
 ) -> dict:
-    if current_user["user_role"] == AccessLevel_Enum.ADMIN.value:
+    if current_user.user_role == AccessLevel_Enum.ADMIN.value:
         db_user = await crud_users.get(
             db=db,
             schema_to_select=UserRead,
@@ -189,15 +184,15 @@ async def patch_user(
     if db_user is None:
         raise NotFoundException("User not found")
 
-    if current_user["username"] != values.username:
+    if current_user.username != values.username:
         # Trying to change for some other user
-        if current_user["user_role"] != AccessLevel_Enum.ADMIN.value:
+        if current_user.user_role != AccessLevel_Enum.ADMIN.value:
             # Don't have permission
             raise ForbiddenException(
                 "Don't have proper access to change other user details"
             )
     else:
-        if current_user["user_role"] != values.user_role:
+        if current_user.user_role != values.user_role:
             # Person cannot change his user role on it's own
             raise ForbiddenException("Cannot change own Role, contact admin")
 
@@ -214,9 +209,6 @@ async def patch_user(
         if existing_email:
             raise DuplicateValueException("Email is already registered")
 
-    # db_user["user_role"] = AccessLevelBase(values.user_role)
-    # await crud_users.exists(db=db, user_role=values.user_role)
-
     await crud_users.update(db=db, object=values, username=username)
     return {"message": "User updated"}
 
@@ -228,63 +220,72 @@ async def update_profile_image(
     db: Annotated[AsyncSession, Depends(async_get_db)],
     file: UploadFile = File(...),
 ):
-    db_user = await crud_users.get(db=db,
-                                   schema_to_select=UserRead,
-                                   username=current_user["username"]
-                )
+    db_user = await crud_users.get(
+        db=db, schema_to_select=UserRead, username=current_user.username
+    )
     if not db_user:
         raise NotFoundException("User not found")
 
-
     FILEPATH = settings.IMAGE_FILE_PATH
     filename = file.filename
-    extension = filename.split(".")
-    if len(extension)<2:
+
+    if filename is None:
+        raise NotFoundException("File Not Found")
+
+    parts: list[str] = filename.split(".")
+    if len(parts) < 2:
         raise ForbiddenException()
-    extension = extension[1]
+    extension = parts[-1]
 
     if extension not in ["png", "jpg"]:
         raise ForbiddenException("Image Type not supported")
 
-    token_name = current_user["username"]+ "." + extension
+    token_name = current_user.username + "." + extension
     generated_name = os.path.join(FILEPATH, token_name)
     file_content = await file.read()
 
     with open(generated_name, "wb") as f:
         f.write(file_content)
         f.close()
-    file.close()
 
-    #Pillow
-    img = Image.open(generated_name)
-    img = img.resize(size=(200,200))
+    await file.close()
+
+    # Pillow
+    imgFile = Image.open(generated_name)
+    img = imgFile.resize(size=(200, 200))
     img.save(generated_name)
 
-
-    update_data_dict = {field: current_user[field] for field in UserUpdate.__fields__}
-
-    value = UserUpdate(**update_data_dict)
-    value.profile_image_url = os.path.join(settings.SERVER_LINK, generated_name)
-    await crud_users.update(db=db, object=value, username=current_user["username"])
+    value = UserUpdate(
+        username=current_user.username,
+        user_role=current_user.user_role,
+        email=current_user.email,
+        name=current_user.name,
+        profile_image_url=os.path.join(settings.SERVER_LINK, generated_name),
+    )
+    await crud_users.update(db=db, object=value, username=current_user.username)
     return {"message": "User Profile Image Updated"}
 
 
 @router.post("/reset_profile_image")
-async def update_profile_image(
+async def reset_profile_image(
     request: Request,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(async_get_db)],
 ):
-    db_user = await crud_users.get(db=db, schema_to_select=UserRead, username=current_user["username"])
+    db_user = await crud_users.get(
+        db=db, schema_to_select=UserRead, username=current_user.username
+    )
     if not db_user:
         raise NotFoundException("User not found")
 
-
-    update_data_dict = {field: current_user[field] for field in UserUpdate.__fields__}
-
-    value = UserUpdate(**update_data_dict)
-    value.profile_image_url = settings.DEFAULT_USER_IMAGE
-    await crud_users.update(db=db, object=value, username=current_user["username"])
+    value = UserUpdate(
+        username=current_user.username,
+        user_role=current_user.user_role,
+        email=current_user.email,
+        name=current_user.name,
+        profile_image_url=settings.DEFAULT_USER_IMAGE,
+    )
+    await crud_users.update(db=db, object=value, username=current_user.username)
     return {"message": "User Profile Image Updated"}
 
 
@@ -296,7 +297,7 @@ async def erase_user(
     db: Annotated[AsyncSession, Depends(async_get_db)],
     token: str = Depends(oauth2_scheme),
 ) -> Dict[str, str]:
-    if current_user["user_role"] < AccessLevel_Enum.ADMIN.value:
+    if current_user.user_role != AccessLevel_Enum.ADMIN.value:
         raise ForbiddenException("Don't have access to delete user")
     db_user = await crud_users.get(db=db, schema_to_select=UserRead, username=username)
     if not db_user:
@@ -312,7 +313,7 @@ async def erase_db_user(
     request: Request,
     username: str,
     db: Annotated[AsyncSession, Depends(async_get_db)],
-    current_user: CurrentSuperUser
+    current_user: CurrentSuperUser,
 ) -> Dict[str, str]:
     db_user = await crud_users.exists(db=db, username=username)
     if not db_user:

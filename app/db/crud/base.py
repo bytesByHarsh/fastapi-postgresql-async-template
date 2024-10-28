@@ -545,7 +545,10 @@ class CRUDBase(
         await db.commit()
 
     async def delete(
-        self, db: AsyncSession, db_row: Row | None = None, **kwargs: Any
+        self,
+        db: AsyncSession,
+        db_row: Row | None | dict[Any, Any] = None,
+        **kwargs: Any,
     ) -> None:
         """
         Soft delete a record if it has "is_deleted" attribute, otherwise perform a hard delete.

@@ -5,8 +5,8 @@ from datetime import datetime, timedelta, timezone
 # Third-Party Dependencies
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi.security import OAuth2
-from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
-from fastapi import Request, HTTPException, status, Depends
+from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel, OAuthFlowPassword
+from fastapi import Request, HTTPException, status
 from fastapi.security.utils import get_authorization_scheme_param
 from jose import jwt, JWTError
 
@@ -30,7 +30,10 @@ class OAuth2PasswordBearerWithCookie(OAuth2):
     ):
         if not scopes:
             scopes = {}
-        flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl, "scopes": scopes})
+
+        flows = OAuthFlowsModel(
+            password=OAuthFlowPassword(tokenUrl=tokenUrl, scopes=scopes)
+        )
         super().__init__(
             flows=flows,
             scheme_name=scheme_name,
@@ -39,7 +42,7 @@ class OAuth2PasswordBearerWithCookie(OAuth2):
         )
 
     async def __call__(self, request: Request) -> Optional[str]:
-        authorization: str = request.cookies.get("access_token")
+        authorization: str | None = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(authorization)
         if not authorization or scheme.lower() != "bearer":
             if self.auto_error:
@@ -90,7 +93,7 @@ async def create_access_token(
 
 # Function to create a refresh token with optional expiration time
 async def create_refresh_token(
-    data: Dict[str, Any], expires_delta: timedelta = None
+    data: Dict[str, Any], expires_delta: timedelta | None = None
 ) -> str:
     to_encode = data.copy()
     if expires_delta:
@@ -107,7 +110,7 @@ async def create_refresh_token(
 
 
 # Function to verify the validity of a token and return TokenData if valid
-async def verify_token(token: str, db: AsyncSession) -> TokenData:
+async def verify_token(token: str, db: AsyncSession) -> TokenData | None:
     """
     Verify a JWT token and return TokenData if valid.
 
@@ -133,7 +136,7 @@ async def verify_token(token: str, db: AsyncSession) -> TokenData:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        username_or_email: str = payload.get("sub")
+        username_or_email: str | None = payload.get("sub")
         if username_or_email is None:
             return None
 
@@ -174,7 +177,7 @@ async def verify_token(token: str, db: AsyncSession) -> TokenData:
 # Function to blacklist a token by storing it in the database
 async def blacklist_token(token: str, db: AsyncSession) -> None:
     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-    expires_at = datetime.fromtimestamp(payload.get("exp"))
+    expires_at = datetime.fromtimestamp(payload.get("exp", 0.0))
     await crud_token_blacklist.create(
         db,
         object=TokenBlacklistCreate(**{"token": token, "expires_at": expires_at}),

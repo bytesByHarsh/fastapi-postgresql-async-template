@@ -61,10 +61,14 @@ def start_application():
             allow_headers=["*"],
         )
 
-    create_folders(f"./{settings.STATIC_FILE_FOLDER}", [f"{settings.PROFILE_IMAGE_FOLDER}"])
-    app.mount(f"/{settings.STATIC_FILE_FOLDER}",
-              StaticFiles(directory=f"{settings.STATIC_FILE_FOLDER}"),
-              name=f"{settings.STATIC_FILE_FOLDER}")
+    create_folders(
+        f"./{settings.STATIC_FILE_FOLDER}", [f"{settings.PROFILE_IMAGE_FOLDER}"]
+    )
+    app.mount(
+        f"/{settings.STATIC_FILE_FOLDER}",
+        StaticFiles(directory=f"{settings.STATIC_FILE_FOLDER}"),
+        name=f"{settings.STATIC_FILE_FOLDER}",
+    )
 
     include_router(app)
     app.add_event_handler("startup", startup_event)

@@ -27,6 +27,7 @@ from app.core.security import (
 
 router = APIRouter(tags=["Login"])
 
+
 @router.post("/login", response_model=Token)
 async def login_for_access_token(
     response: Response,
@@ -52,7 +53,7 @@ async def login_for_access_token(
         value=refresh_token,
         # httponly=True,
         secure=settings.COOKIES_SECURE_SETTINGS,
-        samesite="Lax",
+        samesite="lax",
         max_age=max_age,
     )
     response.set_cookie(
@@ -60,7 +61,7 @@ async def login_for_access_token(
         value=f"Bearer {access_token}",
         # httponly=True,
         secure=settings.COOKIES_SECURE_SETTINGS,
-        samesite="Lax",
+        samesite="lax",
         max_age=max_age,
     )
 
@@ -100,4 +101,3 @@ async def logout(
 
     except JWTError:
         raise UnauthorizedException("Invalid token.")
-

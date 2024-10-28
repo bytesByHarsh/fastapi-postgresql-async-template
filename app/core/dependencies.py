@@ -22,11 +22,20 @@ from app.schemas.v1.schema_user import UserRead
 # Logger instance
 logger = logging.getLogger(__name__)
 
+
+async def get_current_user_base(
+    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(async_get_db)
+) -> UserRead | None:
+    user = await get_current_user(token=token, db=db)
+    if user:
+        return UserRead(**user)
+    return None
+
+
 # Function to get the current user based on the provided authentication token
 async def get_current_user(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(async_get_db)
 ) -> Union[Dict[str, Any], None]:
-
     credentials_exception = UnauthorizedException("User not authenticated.")
 
     token_data = await verify_token(token, db)
@@ -50,10 +59,11 @@ async def get_current_user(
     # Raise an exception if the user is not authenticated
     raise credentials_exception
 
+
 # Function to get the optional user based on the provided request
 async def get_optional_user(
     request: Request, db: AsyncSession = Depends(async_get_db)
-) -> dict:
+) -> dict | None:
     token = request.headers.get("Authorization")
     if not token:
         return None
@@ -89,7 +99,7 @@ async def get_optional_user(
 
 # Function to get the current superuser based on the provided current user information
 async def get_current_superuser(
-    current_user: Annotated[dict, Depends(get_current_user)]
+    current_user: Annotated[dict, Depends(get_current_user)],
 ) -> dict:
     if not current_user["is_superuser"]:
         raise ForbiddenException("You do not have enough privileges.")
@@ -108,5 +118,6 @@ def create_folders(root_folder, sub_folders):
         if not os.path.exists(subfolder_path):
             os.makedirs(subfolder_path)
 
-CurrentUser = Annotated[UserRead, Depends(get_current_user)]
+
+CurrentUser = Annotated[UserRead, Depends(get_current_user_base)]
 CurrentSuperUser = Annotated[UserRead, Depends(get_current_superuser)]
